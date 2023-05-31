@@ -1,0 +1,13 @@
+SELECT Trade_data.directionCode, 
+Regions.name AS name_RF_region, 
+Macro_regions.name AS name_macro_region, 
+Good_groups.name AS group_name, 
+Date_part('year', Trade_data.period::date) AS year, 
+sum(Trade_data.kgvalue::decimal/1000) AS weight
+FROM Trade_data 
+JOIN Regions ON Trade_data.regionCode=Regions.okatoID 
+JOIN Countries ON Trade_data.countryCode=Countries.countryID 
+JOIN Macro_regions ON Countries.macroCode=Macro_regions.macroID 
+JOIN Goods ON Trade_data.hsCode=Goods.goodsID 
+JOIN Good_groups ON Goods.groupCode=Good_groups.groupID
+GROUP BY Trade_data.directionCode, name_RF_region, name_macro_region, group_name, year

@@ -1,0 +1,28 @@
+-- Вариант с оконкой
+
+WITH trade_region AS (SELECT Trade_data.period, kgvalue
+FROM Trade_data JOIN Regions on Trade_data.regionCode=Regions.okatoID
+WHERE Trade_data.directionCode='ex' and Date_part('year', Trade_data.period::date)=2021 and Regions.okatoID='РФ=MSK'),
+
+trade AS (SELECT Trade_data.period, kgvalue
+FROM Trade_data)
+
+SELECT trade_region.period, SUM(trade_region.kgvalue)/SUM(trade.kgvalue)::decimal OVER(PARTITION BY trade_region.period)
+FROM trade_region, trade
+GROUP BY Trade_data.period
+ORDER BY Trade_data.period
+
+-- Вариант без оконки
+
+WITH trade_region AS (SELECT Trade_data.period, SUM(Trade_data.kgvalue)
+FROM Trade_data JOIN Regions on Trade_data.regionCode=Regions.okatoID
+WHERE Trade_data.directionCode='ex' and Date_part('year', Trade_data.period::date)=2021 and Regions.okatoID='РФ=MSK'
+GROUP BY Trade_data.period),
+
+trade AS (SELECT Trade_data.period, kgvalue
+FROM Trade_data
+GROUP BY Trade_data.period)
+
+SELECT trade_region.period, trade_region.kgvalue/trade.kgvalue::decimal
+FROM trade_region, trade
+ORDER BY Trade_data.period
